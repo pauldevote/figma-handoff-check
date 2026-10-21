@@ -1,7 +1,7 @@
 ---
 name: figma-handoff-check
-description: Audit a Figma design against the Figma Handoff Guide (Designing for Pixel-Accurate Builds) before it goes to a developer or to Claude for building, and give the designer a plain-language list of what to fix, with links to each layer. It checks widths that are almost but not quite equal, clipped or overflowing frames, overlapping layers, missing auto layout, groups used as layout, half-pixel sizes, text without text styles, Auto line heights, font weights the site doesn't load, fixed-size text boxes, off-scale spacing, repeated items that aren't components, fake typed lists, loose colours, and whether the page is split into section frames. Use this whenever a designer or developer shares a Figma link and asks whether it's ready for handoff or ready to build, asks to check, audit, review, QA or lint a Figma file or frame, asks "is my design set up right", or wants to know why a build won't match their Figma. Also use it before building from a Figma frame when nobody has checked the file yet.
-compatibility: Needs the Figma connector (MCP) with use_figma, get_screenshot and create_session. Read-only; it never edits the file.
+description: Audit a Figma design against the Figma Handoff Guide (Designing for Pixel-Accurate Builds) before it goes to a developer or to Claude for building, and give the designer a plain-language list of what to fix, with links to each layer. It checks near-equal widths, clipping and overlaps, auto layout, half-pixel sizes, text styles and line heights, font weights the site doesn't load, spacing, components, colours and section frames, and can fix the safe ones after the designer approves. Use this whenever a designer or developer shares a Figma link and asks whether it's ready for handoff or ready to build, asks to check, audit, review, QA or lint a Figma file or frame, asks "is my design set up right", or wants to know why a build won't match their Figma. Also use it before building from an unchecked Figma frame, and when the designer asks Claude to fix what the check found ("fix it for me", "tidy up my file").
+compatibility: Needs the Figma connector (MCP) with use_figma, get_screenshot and create_session. The check is read-only. Fix mode edits the file only after the designer approves the exact list, and needs edit access.
 ---
 
 # Figma handoff check
@@ -14,8 +14,8 @@ The person reading the report is a designer, not a developer. Say "frame", "auto
 "Fill container", the words they see in Figma. Don't say JSON, node, DOM, CSS or script. The tone is a
 helpful colleague checking a file before it goes out, not a grader.
 
-The audit only reads. Never change the designer's file, even to fix something obvious, unless they
-ask you to fix a specific item. If they do, confirm which layers you'll change first.
+The check only reads. Change the designer's file only in fix mode (section 6), only the safe fixes it
+lists, and only after the designer has seen exactly what will change and said yes.
 
 ## 1. Get the frame
 
@@ -136,6 +136,11 @@ because "1088 tall but holds 1428px of content" gets fixed, and "some frames cli
 
 When the file is in good shape, say so plainly, list what's left, and keep the report short.
 
+If any problems are ones fix mode can do (half-pixel sizes, Auto line heights, text that exactly
+matches a style, hex colours that exactly match a colour style, default layer names, hidden layers),
+end the report with one line offering it, e.g. "I can fix the 14 half-pixel sizes, 9 line heights and
+11 layer names for you. Want me to show you exactly what I'd change?"
+
 If the person asked in chat, give the report in chat. If they want something to share with the
 design team, offer to publish it as a document.
 
@@ -143,3 +148,18 @@ design team, offer to publish it as a document.
 
 When the designer has fixed things, run the same audit on the same frame and show before and after
 counts for each problem, so they can see it's done.
+
+## 6. Fix mode
+
+When the designer asks you to fix things, read `references/fix-mode.md` first. In short:
+
+1. Run `scripts/fix.js` with `MODE = 'plan'`. It only reads, and lists every change it would make.
+2. Show that list in plain words, flag anything that changes how the design looks, and ask the
+   designer to save a version (*File → Save to version history*) so they can roll it all back.
+3. Once they say yes, run it with `MODE = 'apply'`, `versionSaved: true` and `expect` set to the
+   plan's counts (it refuses if the file changed in between).
+4. Re-run the audit and show before and after.
+
+Fix mode only does the safe, mechanical fixes. Almost-equal widths, clipping, overlaps, auto layout,
+sections, font weights and the rest need the designer's decision. Say so, and point them at the
+report.

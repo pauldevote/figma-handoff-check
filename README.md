@@ -2,7 +2,8 @@
 
 A Claude skill that checks a Figma frame before it goes to a developer, so the build can match the design.
 Paste a Figma link into Claude and ask "Is this ready for handoff?". You get a plain-language list of what
-to fix, with a link to each layer. It only reads your file. It never changes anything.
+to fix, with a link to each layer. The check only reads your file. Fix mode can make the safe fixes for you,
+but only after you've seen exactly what it will change and said yes.
 
 It checks for:
 - layers that should match but are 1–4px apart, and half-pixel sizes
@@ -25,3 +26,21 @@ It checks for:
 3. Fix what it lists, then paste the link again and ask it to *"check again"*.
 
 Check desktop and mobile frames separately.
+
+## Fix mode
+
+After a check, ask Claude to *"fix the safe ones"*. It can:
+- round half-pixel sizes
+- replace Auto line heights (one-line text keeps exactly the height it has now)
+- apply a text style or colour style where the text or colour matches it exactly
+- rename layers still called Frame 45 or Rectangle 59
+- delete hidden layers (not the ones a component property shows)
+
+Claude shows you the full list first and asks you to save a version (**File → Save to version history**),
+so you can undo it all in one step. You need edit access to the file. It never touches widths, clipping,
+overlaps, auto layout, sections or font weights. Those need your decision, so they stay in the report.
+
+## Changes
+
+- **v1.1**: fix mode.
+- **v1.0**: the check.
